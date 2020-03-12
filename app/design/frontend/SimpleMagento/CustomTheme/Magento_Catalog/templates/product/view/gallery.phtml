@@ -1,0 +1,207 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * Product media data template
+ *
+ * @var $block \Magento\Catalog\Block\Product\View\Gallery
+ */
+?>
+
+<?php
+$images = $block->getGalleryImages()->getItems();
+$mainImage = current(array_filter($images, function ($img) use ($block) {
+    return $block->isMainImage($img);
+}));
+
+if (!empty($images) && empty($mainImage)) {
+    $mainImage = $block->getGalleryImages()->getFirstItem();
+}
+
+$helper = $block->getData('imageHelper');
+$mainImageData = $mainImage ?
+    $mainImage->getData('medium_image_url') :
+    $helper->getDefaultPlaceholderUrl('image');
+
+?>
+
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/slick-carousel/1.6.0/slick.min.css">
+
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+    .videos-slider-1 h4,
+    .videos-slider-2 h4 {
+        font-size: 14px;
+    }
+    #myslider {display: none;}
+
+    /* OVERLAY */
+    .bs-position-cover {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+    }
+    .bs-overlay {
+        display: inline-block;
+        position: relative;
+        max-width: 100%;
+        vertical-align: middle;
+        overflow: hidden;
+        -webkit-transform: translateZ(0);
+        margin: 0;
+    }
+    .bs-overlay:hover .bs-overlay-panel.bs-overlay-top {
+        bottom: 0;
+        opacity: 1;
+        -webkit-transform: translateX(0) translateY(0);
+        transform: translateX(0) translateY(0);
+    }
+    .bs-overlay-panel.bs-overlay-top {
+        top: auto;
+    }
+    .bs-overlay-background {
+        background: rgba(0,0,0,.8);
+        -webkit-transform: translateY(100%);
+        transform: translateY(100%);
+        opacity: 0;
+        transition-duration: .3s;
+        transition-timing-function: ease-out;
+        transition-property: opacity,transform,filter;
+    }
+    .bs-overlay-panel {
+        position: absolute;
+        top: 0;
+        bottom: auto;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        color: #fff;
+    }
+    .bs-overlay>:first-child,
+    .bs-overlay-panel>:last-child {
+        margin-bottom: 0;
+    }
+    .bs-overlay:hover{
+        cursor: pointer;
+    }
+
+    .bs-overlay:after {
+        display: block;
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: auto;
+        width: 54px;
+        height: 38px;
+        background-size: cover;
+    }
+    .slider-nav-thumbnails {
+        margin-top: 10px;
+    }
+    .slider-nav-thumbnails .slick-slide {
+        cursor: pointer;
+        outline: none;
+    }
+    .slider-nav-thumbnails .slick-slide.slick-current.slick-active {
+        opacity: 1;
+    }
+    .slider-nav-thumbnails .slick-slide img {
+        padding: 5px;
+        background: transparent;;
+    }
+    .slider-nav-thumbnails .slick-slide.slick-current.slick-active img {
+        background: #000;
+    }
+    .slider-nav-thumbnails img {
+        width: 40px;
+        margin: 0 5px;
+    }
+    .slider-nav-thumbnails .slick-slide:first-child img {
+        margin-left: 0;
+    }
+    .slider-nav-thumbnails .slick-slide:last-child img {
+        margin-right: 0;
+    }
+
+</style>
+
+
+<?php   $someJSON = $block->getGalleryImagesJson();
+$someArray = json_decode($someJSON, true);
+?>
+<div class="container">
+    <div class="row" id="myslider">
+        <div class="col-sm-8">
+            <div class="videos-slider-2">
+                <?php foreach ($someArray as $value => $key){ ?>
+                <div>
+                    <div class="bs-overlay">
+                        <img src="<?= /* @noEscape */ $key['full'] ?>" alt="" />
+                    </div>
+                </div>
+                <?php }?>
+            </div>
+            <div class="slider-nav-thumbnails">
+                <?php foreach ($someArray as $value => $key){ ?>
+                    <div>
+                        <img src="<?= /* @noEscape */ $key['thumb'] ?>" alt="One">
+                    </div>
+                <?php }?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    require(['jquery', 'jquery/ui', 'slickSlider'], function($){
+        "use strict";
+        var jq = $.noConflict();
+        // jq.fn.slick = jq.fn.slick || function() {};
+
+        jq(document).ready( function() {
+
+            jq(".videos-slider-2").slick({
+                autoplay: false,
+                slidesToScroll: 1,
+                slidesToShow: 1,
+                arrows: true,
+                dots: false,
+                asNavFor: '.slider-nav-thumbnails',
+                prevArrow:"<button type='button' class='slick-prev pull-left'><i class='fa fa-angle-left' aria-hidden='true'></i></button>",
+                nextArrow:"<button type='button' class='slick-next pull-right'><i class='fa fa-angle-right' aria-hidden='true'></i></button>",
+            });
+            jq(".slider-nav-thumbnails").slick({
+                autoplay: false,
+                slidesToShow: 4,
+                slidesToScroll: 1,
+                asNavFor: '.videos-slider-2',
+                dots: true,
+                focusOnSelect: true,
+                variableWidth: true
+            });
+
+           // Remove active class from all thumbnail slides
+            jq('.slider-nav-thumbnails .slick-slide').removeClass('slick-active');
+
+            // Set active class to first thumbnail slides
+            jq('.slider-nav-thumbnails .slick-slide').eq(0).addClass('slick-active');
+
+            // On before slide change match active thumbnail to current slide
+            jq('.videos-slider-2').on('beforeChange', function (event, slick, currentSlide, nextSlide) {
+                var mySlideNumber = nextSlide;
+                jq('.slider-nav-thumbnails .slick-slide').removeClass('slick-active');
+                jq('.slider-nav-thumbnails .slick-slide').eq(mySlideNumber).addClass('slick-active');
+            });
+            jq('#myslider').show();
+        });
+    });
+</script>

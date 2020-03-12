@@ -1,0 +1,111 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+
+/**
+ * Product media data template
+ *
+ * @var $block \Magento\Catalog\Block\Product\View\Gallery
+ */
+?>
+
+    <?php   $someJSON = $block->getGalleryImagesJson();
+    $someArrayTemp = json_decode($someJSON, true);
+
+    $_product = $block->getProduct();
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $mediaUrl =  $objectManager->get('Magento\Store\Model\StoreManagerInterface')
+        ->getStore()
+        ->getBaseUrl(\Magento\Framework\UrlInterface::URL_TYPE_MEDIA);
+    $diamondIcon=$_product->getResource()->getAttribute('thumbnail')->getFrontend()->getValue($_product);
+//    echo '<pre>';
+//    print_r($someJSON->getThumbnail());exit();
+
+    $someArrayFinal = [];
+
+    $i = 1;
+    foreach ($someArrayTemp as $key => $value) {
+        if($value["isMain"] == "1"){
+            $someArrayFinal[0] = $value;
+        }else{
+            $someArrayFinal[$i] = $value;
+            $i++;
+        }     
+    }
+    ksort($someArrayFinal);
+   
+    $someArray = $someArrayFinal;
+
+    $someArrayTemp = array_chunk($someArrayFinal,4);
+    $someArray = $someArrayTemp[0];
+
+    ?>
+    <div class="container">
+        <div class="row" id="myslider">
+            <div class="col-sm-8">
+                <div class="videos-slider-2">
+                    <?php foreach ($someArray as $value => $key){ ?>
+                        <div>
+                            <div class="bs-overlay">
+                                <img src="<?= /* @noEscape */ $key['full'] ?>" alt="" />
+                            </div>
+                        </div>
+                    <?php }?>
+                </div>
+                <div class="slider-nav-thumbnails">
+                        <div>
+                            <img src=" <?php echo $mediaUrl."catalog/product".$diamondIcon ?>" />
+                        </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        require(['jquery', 'jquery/ui', 'slickSlider'], function($){
+            "use strict";
+            // var jq = $.noConflict();
+
+            $(document).ready( function() {
+
+                $(".videos-slider-2").slick({
+                    autoplay: false,
+                    slidesToScroll: 1,
+                    slidesToShow: 1,
+                    arrows: true,
+                    dots: false,
+                    asNavFor: '.slider-nav-thumbnails',
+                    prevArrow:"<button type='button' class='slick-prev pull-left'></button>",
+                    nextArrow:"<button type='button' class='slick-next pull-right'></button>",
+                });
+
+                $(".slider-nav-thumbnails").slick({
+                    autoplay: false,
+                    slidesToShow: 4,
+                    slidesToScroll: 1,
+                    asNavFor: '.videos-slider-2',
+                    dots: true,
+                    focusOnSelect: true,
+                    variableWidth: true
+                });
+
+                // Remove active class from all thumbnail slides
+                $('.slider-nav-thumbnails .slick-slide').removeClass('slick-active');
+
+                // Set active class to first thumbnail slides
+                $('.slider-nav-thumbnails .slick-slide').eq(0).addClass('slick-active');
+
+                // On before slide change match active thumbnail to current slide
+                $('.videos-slider-2').on('beforeChange', function (event, slick, currentSlide, nextSlide) {
+                    var mySlideNumber = nextSlide;
+                    $('.slider-nav-thumbnails .slick-slide').removeClass('slick-active');
+                    $('.slider-nav-thumbnails .slick-slide').eq(mySlideNumber).addClass('slick-active');
+                });
+
+                $('#myslider').show();
+            });
+        });
+    </script>
+

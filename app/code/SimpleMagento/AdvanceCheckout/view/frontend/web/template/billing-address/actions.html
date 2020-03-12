@@ -1,0 +1,27 @@
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<style>
+    #checkout-step-shipping > div.checkout-billing-address > fieldset > div.actions-toolbar > div > button.action.action-update{
+        margin: 6px 15px 0 0;
+    }
+</style>
+<div class="actions-toolbar">
+    <div class="primary">
+        <button class="action action-update"
+                id="update-button"
+                type="button"
+                click="updateAddress">
+            <span translate="'Update'"/>
+        </button>
+        <button class="action action-cancel"
+                type="button"
+                click="cancelAddressEdit"
+                visible="canUseCancelBillingAddress()">
+            <span translate="'Cancel'"/>
+        </button>
+    </div>
+</div>
